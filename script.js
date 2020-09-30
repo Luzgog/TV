@@ -50,14 +50,12 @@ function generer_url(id, temps){
 
 function recuperer_donnee(id){
     var url = "http://127.0.0.1:5000/api/"+id
+    console.log(url)
     fetch(url)
-    .then((data)=>{return data.json()})
-    .catch((err)=> {console.error(err)})
+    .then(res=>{return res.json()})
+    //.then(data => {console.log(data)})
+    .catch(err=> {console.error("aaa")})
 }
 var a = recuperer_donnee(95878)
-console.log(typeof a)
-
-var data = JSON.parse(a);
-console.log(data.valeur)
 
 //http://api.openweathermap.org/data/2.5/weather?id=2995468&appid=4502b4f9f62b856175f966968f504e09&lang=fr&units=metric
