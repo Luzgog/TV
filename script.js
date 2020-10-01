@@ -22,6 +22,7 @@ function ajouter_ligne(heure, groupe, salle, nom){
         newCell.appendChild(newText)
     }
 }
+ajouter_ligne("08:00", "1A3B", "006", "ER")
 function afficher_heure(){
     var date = new Date()
     var h = date.getHours()
@@ -50,12 +51,28 @@ function generer_url(id, temps){
 
 function recuperer_donnee(id){
     var url = "http://127.0.0.1:5000/api/"+id
-    console.log(url)
     fetch(url)
-    .then(res=>{return res.json()})
-    //.then(data => {console.log(data)})
-    .catch(err=> {console.error("aaa")})
+    .then(data => {
+        if (data.ok == true){
+            //console.log("je lui envoie le json de ca")
+            //console.log(data)
+            return data.json();
+        }
+    })
+    .then(json => {
+        return json.valeur
+    })
+    .then(ical =>{
+        var calendrier = ICAL.parse(ical);
+        var comp = new ICAL.Component(calendrier);
+        var vevent = comp.getFirstSubcomponent("vevent");
+        var summary = vevent.getFirstPropertyValue("summary");
+        console.log(comp)
+        console.log(vevent)
+        console.log(summary)
+    })
+    .catch(err=> {console.error(err)})
 }
-var a = recuperer_donnee(95878)
+recuperer_donnee(95878)
 
 //http://api.openweathermap.org/data/2.5/weather?id=2995468&appid=4502b4f9f62b856175f966968f504e09&lang=fr&units=metric
