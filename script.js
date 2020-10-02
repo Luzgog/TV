@@ -22,7 +22,7 @@ function ajouter_ligne(heure, groupe, salle, nom){
         newCell.appendChild(newText)
     }
 }
-ajouter_ligne("08:00", "1A3B", "006", "ER")
+//ajouter_ligne("08:00", "1A3B", "006", "ER")
 function afficher_heure(){
     var date = new Date()
     var h = date.getHours()
@@ -37,25 +37,19 @@ function afficher_heure(){
     setTimeout(afficher_heure, 1000)//on attend 1 seconde, ouai c'est peut etre overkill mais balek
 }
 afficher_heure()//on est obliger de le lancer une fois pour initialiser
-function to2nombre(nb){//renvoie un string avec 2 nombre quite' a rajouter 8 devant
+function to2nombre(nb){//renvoie un string avec 2 nombre quite' a rajouter 0 devant
     if (nb<10){
         return "0"+nb
     }else{
         return nb
     }
 }
-
-function generer_url(id, temps){
-    return "https://cors-anywhere.herokuapp.com/https://ade-web-consult.univ-amu.fr/jsp/custom/modules/plannings/anonymous_cal.jsp?projectId=8&resources=" + id+"&calType=ical&firstDate=" + temps.getFullYear()+"-"+to2nombre(temps.getMonth())+"-" +to2nombre(temps.getDate())+"&lastDate="+temps.getFullYear()+"-"+to2nombre(temps.getMonth())+"-"+to2nombre(temps.getDate());
-}
-
 function recuperer_donnee(id){
+    var ICAL = require("ical.js")
     var url = "http://127.0.0.1:5000/api/"+id
     fetch(url)
     .then(data => {
         if (data.ok == true){
-            //console.log("je lui envoie le json de ca")
-            //console.log(data)
             return data.json();
         }
     })
@@ -65,14 +59,52 @@ function recuperer_donnee(id){
     .then(ical =>{
         var calendrier = ICAL.parse(ical);
         var comp = new ICAL.Component(calendrier);
+        var vevent = comp.getAllSubcomponents("vevent")//on recupere tout les evenements
+        //console.log(vevent)
+        vevent.forEach(element => {
+            //console.log(element)
+            //console.log("Nom du cour :" + element.getFirstPropertyValue("summary"))
+            //console.log(element.getFirstPropertyValue("dtend"))
+            var temps = element.getFirstPropertyValue("dtend")
+            //console.log("heure de debut " + to2nombre(temps._time.hour) + "h" + to2nombre(temps._time.minute))
+            //console.log(element.getFirstPropertyValue("location"))
+            //console.log(element.getFirstPropertyValue("description"))
+            ajouter_ligne(to2nombre(temps._time.hour) + "h" + to2nombre(temps._time.minute), "1AG1A", element.getFirstPropertyValue("location"), element.getFirstPropertyValue("summary"))
+        });
+        /*
         var vevent = comp.getFirstSubcomponent("vevent");
         var summary = vevent.getFirstPropertyValue("summary");
-        console.log(comp)
-        console.log(vevent)
         console.log(summary)
+        console.log(vevent)
+        console.log(comp)*/
     })
     .catch(err=> {console.error(err)})
 }
-recuperer_donnee(95878)
+recuperer_donnee(95873)
 
+function trier_tableau(){
+    /*On parcoure chaque ligne et on ajoute a notre liste les elements de la ligne puis ensuite on trie la liste et on rajoute tout ce qui est dans la liste dans le tableau*/ 
+    var tableRef = document.getElementById("tableau").getElementsByTagName("tbody")[0]
+    var liste = [];
+    console.log("2")
+    for (var i =0; i< tableRef.rows.length; i++){
+        var l = [];
+        console.log("1")
+        for (var j =0; j<tableRef.rows[i].cells.length; j++){
+            l.push(tableRef.rows[i].cells[j].innerText)
+            console.log("je rajoute " + tableRef.rows[i].cells[j].innerText)
+        }
+        liste.push(l)
+    }
+    console.log(liste)
+
+}
+
+/*
+1A:
+G3b : 95878
+G1a : 95873
+
+
+*/
 //http://api.openweathermap.org/data/2.5/weather?id=2995468&appid=4502b4f9f62b856175f966968f504e09&lang=fr&units=metric

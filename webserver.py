@@ -10,7 +10,7 @@ def generer_url(id, time):
 
 @app.route("/api/<id>")#cette fonction est appelé a chaque fois que on contacte http://127.0.0.1/api/...
 def api(id):# A faire, rajouter si jamais ya une erreur parceque yaura des erreurs et je veux pas que le serv s'arrete
-    r = requests.get(generer_url(95878, time.localtime()))
+    r = requests.get(generer_url(id, time.localtime()))
     res = jsonify(valeur = r.text)
     res.headers['Access-Control-Allow-Origin'] = '*' #autorise tout le monde en CORS
     return res
