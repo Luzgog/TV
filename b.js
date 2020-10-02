@@ -9548,6 +9548,78 @@ function to2nombre(nb){//renvoie un string avec 2 nombre quite' a rajouter 0 dev
         return nb
     }
 }
+function clear_tableau(){
+    var tableHeaderRowCount = 1;
+    var table = document.getElementById("tableau");
+    var rowCount = table.rows.length;
+    for (var i = tableHeaderRowCount; i < rowCount; i++) {
+        table.deleteRow(tableHeaderRowCount);
+}
+}
+function trier_tableau(){
+    /*On parcoure chaque ligne et on ajoute a notre liste les elements de la ligne puis ensuite on trie la liste et on rajoute tout ce qui est dans la liste dans le tableau*/ 
+    var tableRef = document.getElementById("tableau").getElementsByTagName("tbody")[0]
+    var liste = [];
+    for ( i =0; i< tableRef.rows.length; i++){
+        var l = [];
+        for ( j =0; j<tableRef.rows[i].cells.length; j++){
+            l.push(tableRef.rows[i].cells[j].innerText)
+        }
+        liste.push(l)
+    }
+    //a partir de maintenant on a une liste qui contient des listes qui contiennent chaque element
+    liste.sort(function(a, b) { // il faut faire une fonction qui prend 2 listes et doit retourner un nombre negatif si la liste a vient avant la liste b et positif sinon
+        var temps = new Date()
+        var nb1 = Date.parse(to2nombre(temps.getDate())+'/'+to2nombre(temps.getMonth())+ '/' + temps.getFullYear() + " " + a[0]+":00");
+        var nb2 = Date.parse(to2nombre(temps.getDate())+'/'+to2nombre(temps.getMonth())+ '/' + temps.getFullYear() + " " + b[0]+":00");
+        return nb1-nb2
+    })
+    console.log(liste)
+    clear_tableau()
+    
+    for(i = 0; i<liste.length; i++){
+        ajouter_ligne(liste[i][0], liste[i][1], liste[i][2], liste[i][3])
+    }
+}
+function set_map(){
+    var map = new Map()
+    //1ere annee
+    map.set("1A", 95872)
+    map.set("1A G1", 97637)
+    map.set("1A G1 A", 95873)
+    map.set("1A G1 B", 95874)
+    map.set("1A G2", 97638)
+    map.set("1A G2 A", 95875)
+    map.set("1A G1 B", 95876)
+    map.set("1A G3", 97639)
+    map.set("1A G3 A", 95877)
+    map.set("1A G3 B", 95878)
+    map.set("1A G4", 97640)
+    map.set("1A G4 A", 95879)
+    map.set("1A G4 B", 95880)
+
+
+    //2eme annee
+    map.set("2A", 18854)
+    map.set("2A G1 A", 43724)
+    map.set("2A G1 B", 43786)
+    map.set("2A G2 A", 18832)
+    map.set("2A G2 B", 32167)
+    map.set("2A G3 A", 32189)
+    map.set("2A G3 B", 43713)
+
+    //1ere annee apprentie
+    map.set("1A APP", 24043)
+    map.set("1A APP A", 54062)
+    map.set("1A APP B", 21383)
+
+    //2eme annee apprentie
+    map.set("2A APP", 24043)
+    map.set("2A APP A", 54062)
+    map.set("2A APP B", 21383)
+}
+var map = set_map();
+
 function recuperer_donnee(id){
     var ICAL = require("ical.js")
     var url = "http://127.0.0.1:5000/api/"+id
@@ -9564,17 +9636,14 @@ function recuperer_donnee(id){
         var calendrier = ICAL.parse(ical);
         var comp = new ICAL.Component(calendrier);
         var vevent = comp.getAllSubcomponents("vevent")//on recupere tout les evenements
-        //console.log(vevent)
+        console.log(vevent)
         vevent.forEach(element => {
-            //console.log(element)
-            //console.log("Nom du cour :" + element.getFirstPropertyValue("summary"))
-            //console.log(element.getFirstPropertyValue("dtend"))
             var temps = element.getFirstPropertyValue("dtend")
-            //console.log("heure de debut " + to2nombre(temps._time.hour) + "h" + to2nombre(temps._time.minute))
-            //console.log(element.getFirstPropertyValue("location"))
-            //console.log(element.getFirstPropertyValue("description"))
-            ajouter_ligne(to2nombre(temps._time.hour) + "h" + to2nombre(temps._time.minute), "1AG1A", element.getFirstPropertyValue("location"), element.getFirstPropertyValue("summary"))
+            var d = element.getFirstPropertyValue("description")
+            ajouter_ligne(to2nombre(temps._time.hour) + ":" + to2nombre(temps._time.minute),"1A APP", element.getFirstPropertyValue("location"), element.getFirstPropertyValue("summary"))
+            
         });
+        trier_tableau()
         /*
         var vevent = comp.getFirstSubcomponent("vevent");
         var summary = vevent.getFirstPropertyValue("summary");
@@ -9584,33 +9653,9 @@ function recuperer_donnee(id){
     })
     .catch(err=> {console.error(err)})
 }
-recuperer_donnee(95873)
-
-function trier_tableau(){
-    /*On parcoure chaque ligne et on ajoute a notre liste les elements de la ligne puis ensuite on trie la liste et on rajoute tout ce qui est dans la liste dans le tableau*/ 
-    var tableRef = document.getElementById("tableau").getElementsByTagName("tbody")[0]
-    var liste = [];
-    liste.push(["08h00", "1AG1A", "Salle 006", "TD SIN G1"])
-    console.log("2")
-    for (var i =0; i< tableRef.rows.length; i++){
-        var l = [];
-        console.log("1")
-        for (var j =0; j<tableRef.rows[i].cells.length; j++){
-            l.push(tableRef.rows[i].cells[j].innerText)
-            console.log("je rajoute " + tableRef.rows[i].cells[j].innerText)
-        }
-        liste.push(l)
-    }
-    console.log(liste)
-
-}
-setTimeout(trier_tableau(), 3000)
-/*
-1A:
-G3b : 95878
-G1a : 95873
+recuperer_donnee(18832)
+recuperer_donnee(32167)
 
 
-*/
 //http://api.openweathermap.org/data/2.5/weather?id=2995468&appid=4502b4f9f62b856175f966968f504e09&lang=fr&units=metric
 },{"ical.js":1}]},{},[2]);
