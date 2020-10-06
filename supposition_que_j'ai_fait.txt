@@ -1,0 +1,3 @@
+1 : il n'y a pas de cour avec 2 groups : seulement tout ou rien
+2 : les apprenties n'ont pas de cour en commun avec les non apprenties
+2 : dtend correspond a l'heure de debut des cours
