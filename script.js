@@ -67,7 +67,7 @@ function set_map_str(){
     map.set(14, "1A G3")
     map.set(9, "1A G2")
     map.set(3, "1A G1")
-    map.set(49, "1A")
+    map.set(47, "1A")
 
     map.set(50, "2A G1A")
     map.set(51, "2A G1B")
@@ -92,27 +92,61 @@ function set_map_str(){
     map.set(1301, "2A APP")
     return map
 }
-var grosse_liste = [] // liste de liste [ UUID, temps._time, location, summary, groupe]
-function ajouter_liste(element){
-    var deja_present = false
-    for (i =0; i<grosse_liste.length; i++) {
-        if (grosse_liste[i][0] == element[0]){// si le cour est deja present, on ajoute le groupe a celui ci
-            grosse_liste[i][4] += element[4]// on additionne les numero correspondant aux groupes
-            deja_present=true 
+// liste de liste [ UUID, temps._time, location, summary, groupe]
+var numero_groupe = []
+class Liste_made_by_me{
+    constructor(){
+        this.valeur = []
+    }
+    ajouter_a_la_liste(element){
+        var deja_present = false
+        for (var i =0; i<this.valeur.length; i++) {
+            if (this.valeur[i][0] == element[0]){// si le cour est deja present, on ajoute le groupe a celui ci
+                this.valeur[i][4] += element[4]// on additionne les numero correspondant aux groupes
+                //console.log("Valeur deja presente")
+                numero_groupe.push(element[4])
+                deja_present=true 
+            }
+        }
+        if (!deja_present){
+            this.valeur.push(element)
+            numero_groupe.push(element[4])
         }
     }
-    if (!deja_present){
-        grosse_liste.push(element)
+    trier_liste(){
+        this.valeur.sort((a, b) => { // il faut faire une fonction qui prend 2 listes et doit retourner un nombre negatif si la liste a vient avant la liste b et positif sinon
+            var nb1 = Date.parse(to2nombre(a[1].date)+'/'+to2nombre(a[1].month)+ '/' + a[1].year + " " + to2nombre(a[1].hour)+ ":" + to2nombre(a[1].minute) +":00");
+            var nb2 = Date.parse(to2nombre(b[1].date)+'/'+to2nombre(b[1].month)+ '/' + b[1].year + " " + to2nombre(b[1].hour)+ ":" + to2nombre(b[1].minute) +":00");
+            if (nb1<nb2){
+                return 1;
+            }
+            if (nb1>nb2){
+                return -1;
+            }
+            else{
+                return 0
+            }
+        });
+        
     }
-
+    
 }
 function nom_groupe(nb){
     var map_str = set_map_str()
     if (!map_str.has(nb)){//si le nombre n'est pas present dans la liste
-        console.log("le nombre" + nb+ "n'est pas present dans le map")
+        console.log("le nombre " + nb+ " n'est pas present dans le map")
     }
-    return map_str[nb]
+    return map_str.get(nb)
 }
+var objet = new Liste_made_by_me();
+function liste_au_tableau(){ // j'ai essayer de mettre cette fonction dans la classe mais ca marche pas, bug de javascript
+    //console.log("la liste fait "+ objet.valeur.length + "de long")
+    for (var i = 0; i < objet.valeur.length; i++){
+        ajouter_ligne(to2nombre(objet.valeur[i][1].hour) + ":" + to2nombre(objet.valeur[i][1].minute), nom_groupe(objet.valeur[i][4]), objet.valeur[i][2], objet.valeur[i][3]);
+    }
+
+}
+
 function afficher_heure(){
     var date = new Date()
     var h = date.getHours()
@@ -143,24 +177,17 @@ function clear_tableau(){
 }
 }
 
-function trier_liste(){
-    grosse_liste.sort( function(a, b){ // il faut faire une fonction qui prend 2 listes et doit retourner un nombre negatif si la liste a vient avant la liste b et positif sinon
-        var nb1 = Date.parse(to2nombre(a[1].date)+'/'+to2nombre(a[1].month)+ '/' + a[1].year + " " + to2nombre(a[1].hour)+ ":" + to2nombre(a[1].minute) +":00");
-        var nb2 = Date.parse(to2nombre(b[1].date)+'/'+to2nombre(b[1].month)+ '/' + b[1].year + " " + to2nombre(b[1].hour)+ ":" + to2nombre(b[1].minute) +":00");
-        console.log("hello")
-        return nb1-nb2;
-    });
-    console.log(grosse_liste)
-    clear_tableau()
-    for (var i = 0; i < grosse_liste.length; i++){
-        console.log("ajout");
-        ajouter_ligne(grosse_liste[i][1].hour + ":" + grosse_liste[i][1].minute, nom_groupe(grosse_liste[i][4]), grosse_liste[i][2], grosse_liste[i][3]);
-        //console.log("On ajoute " + grosse_liste[i][1].hour + ":" + grosse_liste[i][1].minute + "   " + nom_groupe(grosse_liste[i][4])+ "   " + grosse_liste[i][2]+ "   " + grosse_liste[i][3])
-    }
-}
-function recuperer_donnee(id, numero_groupe){
+
+function recuperer_donnee(numero_groupe, id){
     var ICAL = require("ical.js")
     var url = "http://127.0.0.1:5000/api/"+id
+    /*
+    var http = new XMLHttpRequest();
+    http.open("GET", url)
+    http.send()
+    http.onreadystatechange()
+    */
+    
     fetch(url)
     .then(data => {
         if (data.ok == true){
@@ -176,24 +203,55 @@ function recuperer_donnee(id, numero_groupe){
         var comp = new ICAL.Component(calendrier);
         var vevent = comp.getAllSubcomponents("vevent")//on recupere tout les evenements
         vevent.forEach(element => {
-            //console.log(element)
             var liste = []
             liste.push(element.getFirstPropertyValue("uid"))
             liste.push(element.getFirstPropertyValue("dtend")._time) //[ UUID, temps._time, location, summary, groupe]
-            liste.push(element.getFirstPropertyValue("location"))
+            if (element.getFirstPropertyValue("location") == ""){
+                liste.push("Distanciel")
+            }// Si ya pas de salle c'est que c'est forcement distanciel
+            else{
+                liste.push(element.getFirstPropertyValue("location"))
+            }
             liste.push(element.getFirstPropertyValue("summary"))
             liste.push(numero_groupe)
-            //console.log("j'ajoute a la liste des cours ["+ liste[0] + ',' + "temp" + ','+liste[2] + ','+ liste[3]+ ']')
-            ajouter_liste(liste)
+            objet.ajouter_a_la_liste(liste)
+            console.log("fini avec le groupe " + nom_groupe(numero_groupe))
         });
     })
-    .catch(err=> {console.error(err)})
+    .catch(err =>{
+        console.log(err)
+    })
+
 }
 function main(){
-    var map_nombre = set_map_nombre()
-    recuperer_donnee(95878, 8)
-    trier_liste()
+    //var map_nombre = set_map_nombre()
+    var p = new Promise(function(resolve, reject){
+        recuperer_donnee(1, 95873)
+        console.log("groupe 1a")
+        recuperer_donnee(2, 95874)
+        console.log("groupe 1b")
+        recuperer_donnee(4, 95875)
+        console.log("groupe 2a")
+        recuperer_donnee(5, 95876)
+        console.log("groupe 2b")
+        recuperer_donnee(6, 95877)
+        console.log("groupe 3a")
+        recuperer_donnee(8, 95878)
+        console.log("groupe 3b")
+        recuperer_donnee(10, 95879)
+        console.log("groupe 4a")
+        recuperer_donnee(11, 95880)
+        console.log("groupe 4b")
+    })
+    setTimeout(function(){
+
+        console.log(objet.valeur)
+        objet.trier_liste()
+        liste_au_tableau()
+    }, 5000);
+
 }
+
 main()
 
 
