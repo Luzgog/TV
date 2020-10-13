@@ -9597,7 +9597,7 @@ function set_map_str(){
     return map
 }
 // liste de liste [ UUID, temps._time, location, summary, groupe]
-var numero_groupe = []
+
 class Liste_made_by_me{
     constructor(){
         this.valeur = []
@@ -9608,29 +9608,31 @@ class Liste_made_by_me{
             if (this.valeur[i][0] == element[0]){// si le cour est deja present, on ajoute le groupe a celui ci
                 this.valeur[i][4] += element[4]// on additionne les numero correspondant aux groupes
                 //console.log("Valeur deja presente")
-                numero_groupe.push(element[4])
                 deja_present=true 
             }
         }
         if (!deja_present){
             this.valeur.push(element)
-            numero_groupe.push(element[4])
         }
     }
     trier_liste(){
+
         this.valeur.sort((a, b) => { // il faut faire une fonction qui prend 2 listes et doit retourner un nombre negatif si la liste a vient avant la liste b et positif sinon
-            var nb1 = Date.parse(to2nombre(a[1].date)+'/'+to2nombre(a[1].month)+ '/' + a[1].year + " " + to2nombre(a[1].hour)+ ":" + to2nombre(a[1].minute) +":00");
-            var nb2 = Date.parse(to2nombre(b[1].date)+'/'+to2nombre(b[1].month)+ '/' + b[1].year + " " + to2nombre(b[1].hour)+ ":" + to2nombre(b[1].minute) +":00");
-            if (nb1<nb2){
-                return 1;
-            }
-            if (nb1>nb2){
-                return -1;
+
+            var nb1 = new Date(a[1].year, a[1].month -1 , a[1].day, a[1].hour, a[1].minute)
+            var nb2 = new Date(b[1].year, b[1].month -1 , b[1].day, b[1].hour, b[1].minute)
+            var nb3 = nb1.getTime()
+            var nb4 = nb2.getTime()
+            if (nb3- nb4>0){
+                return 1
+            }else if (nb3 - nb4 <0){
+                return -1
             }
             else{
                 return 0
             }
         });
+        console.log(this.valeur)
         
     }
     
@@ -9719,40 +9721,31 @@ function recuperer_donnee(numero_groupe, id){
             liste.push(element.getFirstPropertyValue("summary"))
             liste.push(numero_groupe)
             objet.ajouter_a_la_liste(liste)
-            console.log("fini avec le groupe " + nom_groupe(numero_groupe))
+            //console.log("fini avec le groupe " + nom_groupe(numero_groupe))
         });
     })
     .catch(err =>{
+        console.log("erreur dans le groupe " + nom_groupe(numero_groupe))
         console.log(err)
     })
 
 }
 function main(){
     //var map_nombre = set_map_nombre()
-    var p = new Promise(function(resolve, reject){
-        recuperer_donnee(1, 95873)
-        console.log("groupe 1a")
-        recuperer_donnee(2, 95874)
-        console.log("groupe 1b")
-        recuperer_donnee(4, 95875)
-        console.log("groupe 2a")
-        recuperer_donnee(5, 95876)
-        console.log("groupe 2b")
-        recuperer_donnee(6, 95877)
-        console.log("groupe 3a")
-        recuperer_donnee(8, 95878)
-        console.log("groupe 3b")
-        recuperer_donnee(10, 95879)
-        console.log("groupe 4a")
-        recuperer_donnee(11, 95880)
-        console.log("groupe 4b")
-    })
+    recuperer_donnee(1, 95873)
+    setTimeout(recuperer_donnee, 3000, 2, 95874)
+    setTimeout(recuperer_donnee, 6000, 4, 95875)
+    setTimeout(recuperer_donnee, 9000, 5, 95876)
+    setTimeout(recuperer_donnee, 12000, 6, 95877)
+    setTimeout(recuperer_donnee, 15000, 8, 95878)
+    setTimeout(recuperer_donnee, 18000, 10, 95879)
+    setTimeout(recuperer_donnee, 21000, 11, 95880)
     setTimeout(function(){
-
-        console.log(objet.valeur)
+        console.log("fin des recup")
+        clear_tableau()
         objet.trier_liste()
         liste_au_tableau()
-    }, 5000);
+    }, 25000);
 
 }
 

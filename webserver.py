@@ -2,7 +2,7 @@ from flask import jsonify,Flask, render_template
 #from flask_cors import CORS, cross_origin
 import datetime, requests
 app = Flask(__name__)
-temps = datetime.datetime.now() + datetime.timedelta(days=4)
+temps = datetime.datetime.now() + datetime.timedelta(days=1)
 app.config['CORS_HEADERS'] = 'Content-Type'
 def generer_url(id, time):
     """prend en entrée l'id qui correspond au groupe et renvoie  l'url"""
