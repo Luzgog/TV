@@ -9583,6 +9583,7 @@ function set_map_str(){
     map.set(101, "2A G1")
     map.set(105, "2A G2")
     map.set(109, "2A G3")
+    map.set(206, "2A G1 +G2")
     map.set(315, "2A")
 
     map.set(320, "1A APP A")
@@ -9635,12 +9636,16 @@ class Liste_made_by_me{
         console.log(this.valeur)
         
     }
+    clear_liste(){
+        this.valeur = []
+    }
     
 }
 function nom_groupe(nb){
     var map_str = set_map_str()
     if (!map_str.has(nb)){//si le nombre n'est pas present dans la liste
         console.log("le nombre " + nb+ " n'est pas present dans le map")
+        return ""
     }
     return map_str.get(nb)
 }
@@ -9682,75 +9687,104 @@ function clear_tableau(){
         table.deleteRow(tableHeaderRowCount);
 }
 }
-
-
-function recuperer_donnee(numero_groupe, id){
-    var ICAL = require("ical.js")
-    var url = "http://127.0.0.1:5000/api/"+id
-    /*
-    var http = new XMLHttpRequest();
-    http.open("GET", url)
-    http.send()
-    http.onreadystatechange()
-    */
-    
-    fetch(url)
-    .then(data => {
-        if (data.ok == true){
-            return data.json();
+function test(numero_groupe, id){
+    return new Promise( resolve => {
+        console.log("debut avec le groupe "+ nom_groupe(numero_groupe) )
+        var ICAL = require("ical.js")
+        var url = "http://127.0.0.1:5000/api/"+id
+        try{
+            fetch(url)
+            .then(data => {
+                if (data.ok == true){
+                    return data.json();
+                }
+            })
+            .then(json => {
+                return json.valeur
+            })
+            .then(ical =>{
+                //console.log("je recupere les données suivante : \n"+ical)
+                try{
+                    var calendrier = ICAL.parse(ical);
+                    var comp = new ICAL.Component(calendrier);
+                    var vevent = comp.getAllSubcomponents("vevent")//on recupere tout les evenements
+                    vevent.forEach(element => {
+                        var liste = []
+                        /*
+                        if (nom_groupe(numero_groupe) == "1A G1A"){
+                            console.log(element.getFirstPropertyValue("summary"))
+                            console.log(element)
+                            console.log(element.getFirstPropertyValue("dtend"))
+                            console.log(element.getFirstPropertyValue("dtstart"))
+                            console.log(element.getFirstPropertyValue("dtstamp"))
+                            console.log(element.getFirstPropertyValue("sequence"))
+                        }*/
+                        liste.push(element.getFirstPropertyValue("uid"))
+                        liste.push(element.getFirstPropertyValue("dtend")._time) //[ UUID, temps._time, location, summary, groupe]
+                        if (element.getFirstPropertyValue("location") == ""){
+                            liste.push("")
+                        }
+                        else{
+                            liste.push(element.getFirstPropertyValue("location"))
+                        }
+                        liste.push(element.getFirstPropertyValue("summary"))
+                        liste.push(numero_groupe)
+                        objet.ajouter_a_la_liste(liste)
+                        
+                    });
+                    return("RAS")
+                }catch (error){
+                    return "probleme"
+                }
+            
+            })
+            .catch(error => {
+                return "alerte"
+            })
+        }catch (error){
+            resolve("Alerte")
         }
+        
     })
-    .then(json => {
-        return json.valeur
-    })
-    .then(ical =>{
-        //console.log("je recupere les données suivante : \n"+ical)
-        var calendrier = ICAL.parse(ical);
-        var comp = new ICAL.Component(calendrier);
-        var vevent = comp.getAllSubcomponents("vevent")//on recupere tout les evenements
-        vevent.forEach(element => {
-            var liste = []
-            liste.push(element.getFirstPropertyValue("uid"))
-            liste.push(element.getFirstPropertyValue("dtend")._time) //[ UUID, temps._time, location, summary, groupe]
-            if (element.getFirstPropertyValue("location") == ""){
-                liste.push("Distanciel")
-            }// Si ya pas de salle c'est que c'est forcement distanciel
-            else{
-                liste.push(element.getFirstPropertyValue("location"))
-            }
-            liste.push(element.getFirstPropertyValue("summary"))
-            liste.push(numero_groupe)
-            objet.ajouter_a_la_liste(liste)
-            //console.log("fini avec le groupe " + nom_groupe(numero_groupe))
-        });
-    })
-    .catch(err =>{
-        console.log("erreur dans le groupe " + nom_groupe(numero_groupe))
-        console.log(err)
-    })
-
 }
-function main(){
-    //var map_nombre = set_map_nombre()
-    recuperer_donnee(1, 95873)
-    setTimeout(recuperer_donnee, 3000, 2, 95874)
-    setTimeout(recuperer_donnee, 6000, 4, 95875)
-    setTimeout(recuperer_donnee, 9000, 5, 95876)
-    setTimeout(recuperer_donnee, 12000, 6, 95877)
-    setTimeout(recuperer_donnee, 15000, 8, 95878)
-    setTimeout(recuperer_donnee, 18000, 10, 95879)
-    setTimeout(recuperer_donnee, 21000, 11, 95880)
-    setTimeout(function(){
-        console.log("fin des recup")
-        clear_tableau()
+async function recuperer_donnee(){
+    
+    var map = set_map_nombre();
+    var liste2 = []
+    for (const [numero_groupe , id] of map){
+            var result = await test(numero_groupe, id)
+            if (result = "RAS"){
+                console.log("fini avec le groupe " + nom_groupe(numero_groupe))
+            }else{
+                liste2.push([numero_groupe, id])
+            }
+    }// on a executé pour chaque groupe 1 fois et mit ceux qui marche pas dans la liste 2
+    while (liste2.length != 0){
+        var a = []
+        for(var i =0; i<liste2; i++){
+            console.log("je retry " + nom_groupe(numero_groupe))
+            var result = await test(i[0], i[1])
+            if (result = "RAS"){
+                console.log("fini avec le groupe " + nom_groupe(numero_groupe))
+            }else{
+                a.push([numero_groupe, id])
+            }
+        }
+        liste2 = a
+    }
+    clear_tableau()
+    setTimeout(()=>{
         objet.trier_liste()
         liste_au_tableau()
-    }, 25000);
+        console.log("retry dans 5 minutes")
+        objet.clear_liste()
+        setTimeout(recuperer_donnee, 18000000);
+    }, 1500)
 
+    
 }
 
-main()
-
+recuperer_donnee()
 
 //http://api.openweathermap.org/data/2.5/weather?id=2995468&appid=4502b4f9f62b856175f966968f504e09&lang=fr&units=metric
 /*
