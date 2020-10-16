@@ -9633,7 +9633,6 @@ class Liste_made_by_me{
                 return 0
             }
         });
-        console.log(this.valeur)
         
     }
     clear_liste(){
@@ -9652,8 +9651,9 @@ function nom_groupe(nb){
 var objet = new Liste_made_by_me();
 function liste_au_tableau(){ // j'ai essayer de mettre cette fonction dans la classe mais ca marche pas, bug de javascript
     //console.log("la liste fait "+ objet.valeur.length + "de long")
+    var decalage = new Date()
     for (var i = 0; i < objet.valeur.length; i++){
-        ajouter_ligne(to2nombre(objet.valeur[i][1].hour) + ":" + to2nombre(objet.valeur[i][1].minute), nom_groupe(objet.valeur[i][4]), objet.valeur[i][2], objet.valeur[i][3]);
+        ajouter_ligne(to2nombre(objet.valeur[i][1].hour - decalage.getTimezoneOffset()/60) + ":" + to2nombre(objet.valeur[i][1].minute), nom_groupe(objet.valeur[i][4]), objet.valeur[i][2], objet.valeur[i][3]);
     }
 
 }
@@ -9687,103 +9687,87 @@ function clear_tableau(){
         table.deleteRow(tableHeaderRowCount);
 }
 }
-function test(numero_groupe, id){
-    return new Promise( resolve => {
+async function test(numero_groupe, id){
         console.log("debut avec le groupe "+ nom_groupe(numero_groupe) )
-        var ICAL = require("ical.js")
-        var url = "http://127.0.0.1:5000/api/"+id
-        try{
-            fetch(url)
-            .then(data => {
-                if (data.ok == true){
-                    return data.json();
-                }
-            })
-            .then(json => {
-                return json.valeur
-            })
-            .then(ical =>{
-                //console.log("je recupere les données suivante : \n"+ical)
-                try{
-                    var calendrier = ICAL.parse(ical);
-                    var comp = new ICAL.Component(calendrier);
-                    var vevent = comp.getAllSubcomponents("vevent")//on recupere tout les evenements
-                    vevent.forEach(element => {
-                        var liste = []
-                        /*
-                        if (nom_groupe(numero_groupe) == "1A G1A"){
-                            console.log(element.getFirstPropertyValue("summary"))
-                            console.log(element)
-                            console.log(element.getFirstPropertyValue("dtend"))
-                            console.log(element.getFirstPropertyValue("dtstart"))
-                            console.log(element.getFirstPropertyValue("dtstamp"))
-                            console.log(element.getFirstPropertyValue("sequence"))
-                        }*/
-                        liste.push(element.getFirstPropertyValue("uid"))
-                        liste.push(element.getFirstPropertyValue("dtend")._time) //[ UUID, temps._time, location, summary, groupe]
-                        if (element.getFirstPropertyValue("location") == ""){
-                            liste.push("")
-                        }
-                        else{
-                            liste.push(element.getFirstPropertyValue("location"))
-                        }
-                        liste.push(element.getFirstPropertyValue("summary"))
-                        liste.push(numero_groupe)
-                        objet.ajouter_a_la_liste(liste)
-                        
-                    });
-                    return("RAS")
-                }catch (error){
-                    return "probleme"
-                }
-            
-            })
-            .catch(error => {
-                return "alerte"
-            })
-        }catch (error){
-            resolve("Alerte")
-        }
         
-    })
+        var url = "http://127.0.0.1:5000/api/"+id
+        var a = await fetch(url)
+        var ical = await a.json()
+        return ical;
+
 }
 async function recuperer_donnee(){
-    
+    var ICAL = require("ical.js")
     var map = set_map_nombre();
     var liste2 = []
     for (const [numero_groupe , id] of map){
-            var result = await test(numero_groupe, id)
-            if (result = "RAS"){
-                console.log("fini avec le groupe " + nom_groupe(numero_groupe))
-            }else{
+            await test(numero_groupe, id)
+            .then(ical => {
+                //console.log("je recupere les données suivante : \n"+ical.valeur)
+                var calendrier = ICAL.parse(ical.valeur);
+                var comp = new ICAL.Component(calendrier);
+                var vevent = comp.getAllSubcomponents("vevent")//on recupere tout les evenements
+                vevent.forEach(element => {
+                    var liste = []
+                    liste.push(element.getFirstPropertyValue("uid"))
+                    liste.push(element.getFirstPropertyValue("dtend")._time) //[ UUID, temps._time, location, summary, groupe]
+                    if (element.getFirstPropertyValue("location") == ""){
+                        liste.push("")
+                    }
+                    else{
+                        liste.push(element.getFirstPropertyValue("location"))
+                    }
+                    liste.push(element.getFirstPropertyValue("summary"))
+                    liste.push(numero_groupe)
+                    objet.ajouter_a_la_liste(liste)     
+                    });
+            })
+            .catch(err => {
+                //console.log(err)
                 liste2.push([numero_groupe, id])
-            }
+            })
+            
     }// on a executé pour chaque groupe 1 fois et mit ceux qui marche pas dans la liste 2
+    objet.trier_liste()
+    liste_au_tableau()
     while (liste2.length != 0){
         var a = []
-        for(var i =0; i<liste2; i++){
-            console.log("je retry " + nom_groupe(numero_groupe))
-            var result = await test(i[0], i[1])
-            if (result = "RAS"){
-                console.log("fini avec le groupe " + nom_groupe(numero_groupe))
-            }else{
-                a.push([numero_groupe, id])
-            }
+        for(var i =0; i<liste2.length; i++){
+            console.log("je retry " + nom_groupe(liste2[i][0]))
+            await test(liste2[i][0], liste2[i][1])
+            .then(ical => {
+                //console.log("je recupere les données suivante : \n"+ical.valeur)
+                var calendrier = ICAL.parse(ical.valeur);
+                var comp = new ICAL.Component(calendrier);
+                var vevent = comp.getAllSubcomponents("vevent")//on recupere tout les evenements
+                vevent.forEach(element => {
+                    var liste = []
+                    liste.push(element.getFirstPropertyValue("uid"))
+                    liste.push(element.getFirstPropertyValue("dtstart")._time)//[ UID, temps._time, location, summary, groupe] 
+                    if (element.getFirstPropertyValue("location") == ""){
+                        liste.push("")
+                    }
+                    else{
+                        liste.push(element.getFirstPropertyValue("location"))
+                    }
+                    liste.push(element.getFirstPropertyValue("summary"))
+                    liste.push(liste2[i][0])
+                    objet.ajouter_a_la_liste(liste)     
+                    });
+            })
+            .catch(err => {
+                console.log(err)
+                a.push([liste2[i][0], liste2[i][1]])
+            })
         }
+        console.log(a)
         liste2 = a
     }
+    objet.trier_liste()
+    console.log(objet.valeur)
     clear_tableau()
-    setTimeout(()=>{
-        objet.trier_liste()
-        liste_au_tableau()
-        console.log("retry dans 5 minutes")
-        objet.clear_liste()
-        setTimeout(recuperer_donnee, 18000000);
-    }, 1500)
-
-    
+    liste_au_tableau()
 }
-
 recuperer_donnee()
 
 //http://api.openweathermap.org/data/2.5/weather?id=2995468&appid=4502b4f9f62b856175f966968f504e09&lang=fr&units=metric
@@ -9863,4 +9847,40 @@ G3 = 109
     map.set("2A APP A", 54062)
     map.set("2A APP B", 21383)
 */
+/*
+        .then(data => {
+            if (data.ok == true){
+                resolve(data.json());
+            }
+        })
+        .then(json => {
+            resolve(json.valeur)
+        })
+        .then(ical =>{
+            console.log("je recupere les données suivante : \n"+ical)
+            var calendrier = ICAL.parse(ical);
+            var comp = new ICAL.Component(calendrier);
+            var vevent = comp.getAllSubcomponents("vevent")//on recupere tout les evenements
+            vevent.forEach(element => {
+                var liste = []
+                liste.push(element.getFirstPropertyValue("uid"))
+                liste.push(element.getFirstPropertyValue("dtend")._time) //[ UUID, temps._time, location, summary, groupe]
+                if (element.getFirstPropertyValue("location") == ""){
+                    liste.push("")
+                }
+                else{
+                    liste.push(element.getFirstPropertyValue("location"))
+                }
+                liste.push(element.getFirstPropertyValue("summary"))
+                liste.push(numero_groupe)
+                console.log(liste)
+                objet.ajouter_a_la_liste(liste)
+                        
+                });
+                resolve("RAS")
+            })
+        .catch(error => {
+            reject("alerte")
+        })
+    })*/
 },{"ical.js":1}]},{},[2]);

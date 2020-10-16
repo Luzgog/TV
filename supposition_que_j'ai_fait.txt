@@ -1,2 +1,0 @@
-1 : il n'y a pas de cour avec 2 groupes seulement : tout le monde de l'annee ou un seul groupe
-2 : les apprenties n'ont pas de cour en commun avec les non apprenties
