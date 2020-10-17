@@ -9653,6 +9653,7 @@ function liste_au_tableau(){ // j'ai essayer de mettre cette fonction dans la cl
     //console.log("la liste fait "+ objet.valeur.length + "de long")
     var decalage = new Date()
     for (var i = 0; i < objet.valeur.length; i++){
+        //console.log(objet.valeur[i][1].hour)
         ajouter_ligne(to2nombre(objet.valeur[i][1].hour - decalage.getTimezoneOffset()/60) + ":" + to2nombre(objet.valeur[i][1].minute), nom_groupe(objet.valeur[i][4]), objet.valeur[i][2], objet.valeur[i][3]);
     }
 
@@ -9710,7 +9711,7 @@ async function recuperer_donnee(){
                 vevent.forEach(element => {
                     var liste = []
                     liste.push(element.getFirstPropertyValue("uid"))
-                    liste.push(element.getFirstPropertyValue("dtend")._time) //[ UUID, temps._time, location, summary, groupe]
+                    liste.push(element.getFirstPropertyValue("dtstart")._time) //[ UUID, temps._time, location, summary, groupe]
                     if (element.getFirstPropertyValue("location") == ""){
                         liste.push("")
                     }
