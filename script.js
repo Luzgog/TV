@@ -50,8 +50,21 @@ function set_map_nombre(){
     //2eme annee apprentie
     map.set(650, 123861)
     map.set(651, 123860)
+
+    //LP Epocs
+    map.set(1400, 29128)
+    map.set(1401, 29149)
+
+    //LP RSF
+    map.set(2900, 29178)
+    map.set(3000, 58120)
+    map.set(3100, 29179)
+    map.set(3200, 29180)
+    map.set(3300, 29181)
+    map.set(3400, 58122)
     return map
 }
+
 function set_map_str(){
     var map = new Map()
     map.set(1, "1A G1A")
@@ -91,8 +104,25 @@ function set_map_str(){
     map.set(651, "2A APP B")
 
     map.set(1301, "2A APP")
+    
+    map.set(1400, "LP EPOCS G1")
+    map.set(1401, "LP EPOCS G2")
+    map.set(2801, "LP EPOCS")
+
+    map.set(2900, "LP RSF G1A1")
+    map.set(3000, "LP RSF G1A2")
+    map.set(3100, "LP RSF G1B")
+    map.set(3200, "LP RSF G2B")
+    map.set(3300, "LP RSF G2C1")
+    map.set(3400, "LP RSF G2C2")
+
+    map.set(9000, "LP RSF G1")
+    map.set(9900, "LP RSF G2")
+    map.set(18900 , "LP RSF")
+    
     return map
 }
+
 // liste de liste [ UUID, temps._time, location, summary, groupe]
 
 class Liste_made_by_me{
@@ -146,10 +176,27 @@ function nom_groupe(nb){
 }
 var objet = new Liste_made_by_me();
 function liste_au_tableau(){ // j'ai essayer de mettre cette fonction dans la classe mais ca marche pas, bug de javascript
-    //console.log("la liste fait "+ objet.valeur.length + "de long")
     var decalage = new Date()
-    for (var i = 0; i < objet.valeur.length; i++){
-        //console.log(objet.valeur[i][1].hour)
+    /*var i =0;
+    var limite = 20;
+    var nombre_ajouter = 0
+    while(i<objet.valeur.length){
+        var element = objet.valeur[i]
+        var date_element = new Date(element[1].year, element[1].month -1 , element[1].day, element[1].hour, element[1].minute)
+        if (date_element.getTime() - decalage.getTime()< 30600 && date_element.getTime() - decalage.getTime() > 0 && nombre_ajouter <= limite){
+            nombre_ajouter ++;
+            ajouter_ligne(to2nombre(element[1].hour - decalage.getTimezoneOffset()/60) + ":" + to2nombre(element[1].minute), nom_groupe(element[4]), element[2], element[3]);
+        }
+        if(nombre_ajouter >=20){
+            break
+        }
+        i++;
+    }*/
+    console.log(decalage.getTime())
+    for(i=0; i< objet.valeur.length; i++){
+        element = objet.valeur[i]
+        var date_element = new Date(element[1].year, element[1].month -1 , element[1].day, element[1].hour, element[1].minute)
+        console.log(date_element.getTime())
         ajouter_ligne(to2nombre(objet.valeur[i][1].hour - decalage.getTimezoneOffset()/60) + ":" + to2nombre(objet.valeur[i][1].minute), nom_groupe(objet.valeur[i][4]), objet.valeur[i][2], objet.valeur[i][3]);
     }
 
@@ -164,7 +211,7 @@ function afficher_heure(){
     h = (h < 10) ? "0" + h : h
     m = (m < 10) ? "0" + m : m
     var time = h + ":" + m
-    document.getElementById("horloge").innerText = time
+    //document.getElementById("horloge").innerText = time
     document.getElementById("horloge").textContent = time
     setTimeout(afficher_heure, 1000)//on attend 1 seconde, ouai c'est peut etre overkill mais balek
 }
@@ -184,7 +231,7 @@ function clear_tableau(){
         table.deleteRow(tableHeaderRowCount);
 }
 }
-async function test(numero_groupe, id){
+async function lefetch(numero_groupe, id){
         console.log("debut avec le groupe "+ nom_groupe(numero_groupe) )
         
         var url = "http://127.0.0.1:5000/api/"+id
@@ -198,9 +245,8 @@ async function recuperer_donnee(){
     var map = set_map_nombre();
     var liste2 = []
     for (const [numero_groupe , id] of map){
-            await test(numero_groupe, id)
+            await lefetch(numero_groupe, id)
             .then(ical => {
-                //console.log("je recupere les données suivante : \n"+ical.valeur)
                 var calendrier = ICAL.parse(ical.valeur);
                 var comp = new ICAL.Component(calendrier);
                 var vevent = comp.getAllSubcomponents("vevent")//on recupere tout les evenements
@@ -264,10 +310,35 @@ async function recuperer_donnee(){
     console.log(objet.valeur)
     clear_tableau()
     liste_au_tableau()
+    setTimeout(recuperer_donnee, 3600000)//on refait dans 1 heure
 }
 recuperer_donnee()
 
-//http://api.openweathermap.org/data/2.5/weather?id=2995468&appid=4502b4f9f62b856175f966968f504e09&lang=fr&units=metric
+
+async function pour_le_message(){
+    var url = "http://127.0.0.1:5000/message"
+    var a = await fetch(url)
+    var json = await a.json()
+    return json;
+
+}
+async function recuperer_message(){
+        await pour_le_message()
+        .then(json => {
+            return json.message
+        })
+        .then(message =>{
+            console.log(message)
+            document.getElementById("message").textContent = message
+        })
+        .catch(err => {
+            setTimeout(() => {
+                recuperer_message()
+            }, 5000);
+        })
+        setTimeout(recuperer_message, 300000)//on redemande le message toute les 5 minutes pour savoir si il a changé        
+}
+recuperer_message()
 /*
 code pour les groupes
 1: 1A G1a
@@ -307,6 +378,23 @@ G3 = 109
 650 : 2A APP A
 651 : 2A APP B
 2A APP = 1301
+
+LP EPOCS
+1400 : LP EPOCS G1
+1401 : LP EPOCS G2
+LP EPOCS = 2801
+
+LP RSF
+2900: LP RSF G1A1
+3000: LP RSF G1A2
+3100: LP RSF G1B
+3200: LP RSF G2B
+3300: LP RSF G2C1
+3400: LP RSF G2C2
+
+LP RSF G1 = 9000
+LP RSF G2 = 9900
+LP RSF = 18900
 */
 /*
     //1ere annee
@@ -343,40 +431,6 @@ G3 = 109
     //map.set("2A APP", 24043)
     map.set("2A APP A", 54062)
     map.set("2A APP B", 21383)
+    
+    //LP EPOCs
 */
-/*
-        .then(data => {
-            if (data.ok == true){
-                resolve(data.json());
-            }
-        })
-        .then(json => {
-            resolve(json.valeur)
-        })
-        .then(ical =>{
-            console.log("je recupere les données suivante : \n"+ical)
-            var calendrier = ICAL.parse(ical);
-            var comp = new ICAL.Component(calendrier);
-            var vevent = comp.getAllSubcomponents("vevent")//on recupere tout les evenements
-            vevent.forEach(element => {
-                var liste = []
-                liste.push(element.getFirstPropertyValue("uid"))
-                liste.push(element.getFirstPropertyValue("dtend")._time) //[ UUID, temps._time, location, summary, groupe]
-                if (element.getFirstPropertyValue("location") == ""){
-                    liste.push("")
-                }
-                else{
-                    liste.push(element.getFirstPropertyValue("location"))
-                }
-                liste.push(element.getFirstPropertyValue("summary"))
-                liste.push(numero_groupe)
-                console.log(liste)
-                objet.ajouter_a_la_liste(liste)
-                        
-                });
-                resolve("RAS")
-            })
-        .catch(error => {
-            reject("alerte")
-        })
-    })*/
