@@ -175,29 +175,25 @@ function nom_groupe(nb){
     return map_str.get(nb)
 }
 var objet = new Liste_made_by_me();
-function liste_au_tableau(){ // j'ai essayer de mettre cette fonction dans la classe mais ca marche pas, bug de javascript
+// j'ai essayer de mettre cette fonction dans la classe mais ca marche pas, bug de javascript
+function liste_au_tableau(){
+    clear_tableau()
     var decalage = new Date()
-    /*var i =0;
+    var i =0;
     var limite = 20;
     var nombre_ajouter = 0
     while(i<objet.valeur.length){
         var element = objet.valeur[i]
-        var date_element = new Date(element[1].year, element[1].month -1 , element[1].day, element[1].hour, element[1].minute)
-        if (date_element.getTime() - decalage.getTime()< 30600 && date_element.getTime() - decalage.getTime() > 0 && nombre_ajouter <= limite){
+        var date_element = new Date(element[1].year, element[1].month -1 , element[1].day, element[1].hour- decalage.getTimezoneOffset()/60, element[1].minute)
+        if (date_element.getTime() - decalage.getTime()< 3600 & date_element.getTime() - decalage.getTime()>0 & nombre_ajouter <= limite){
             nombre_ajouter ++;
+            //console.log(element[1].getHours() +":"+ element[1].getMinutes() + "est apres " + decalage.getHours() + ":" + decalage.getMinutes())
             ajouter_ligne(to2nombre(element[1].hour - decalage.getTimezoneOffset()/60) + ":" + to2nombre(element[1].minute), nom_groupe(element[4]), element[2], element[3]);
         }
-        if(nombre_ajouter >=20){
+        if(nombre_ajouter >=limite){
             break
         }
         i++;
-    }*/
-    console.log(decalage.getTime())
-    for(i=0; i< objet.valeur.length; i++){
-        element = objet.valeur[i]
-        var date_element = new Date(element[1].year, element[1].month -1 , element[1].day, element[1].hour, element[1].minute)
-        console.log(date_element.getTime())
-        ajouter_ligne(to2nombre(objet.valeur[i][1].hour - decalage.getTimezoneOffset()/60) + ":" + to2nombre(objet.valeur[i][1].minute), nom_groupe(objet.valeur[i][4]), objet.valeur[i][2], objet.valeur[i][3]);
     }
 
 }
