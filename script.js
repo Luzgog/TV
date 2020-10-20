@@ -178,8 +178,7 @@ var objet = new Liste_made_by_me();
 // j'ai essayer de mettre cette fonction dans la classe mais ca marche pas, bug de javascript
 function liste_au_tableau(){
     clear_tableau()
-    //var decalage = new Date()
-    var decalage = new Date(2020, 9, 20, 8, 11)
+    var decalage = new Date()
     var i =0;
     var limite = 20;
     var nombre_ajouter = 0
