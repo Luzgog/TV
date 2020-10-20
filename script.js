@@ -178,19 +178,20 @@ var objet = new Liste_made_by_me();
 // j'ai essayer de mettre cette fonction dans la classe mais ca marche pas, bug de javascript
 function liste_au_tableau(){
     clear_tableau()
-    var decalage = new Date()
+    //var decalage = new Date()
+    var decalage = new Date(2020, 9, 20, 8, 11)
     var i =0;
     var limite = 20;
     var nombre_ajouter = 0
     while(i<objet.valeur.length){
         var element = objet.valeur[i]
         var date_element = new Date(element[1].year, element[1].month -1 , element[1].day, element[1].hour- decalage.getTimezoneOffset()/60, element[1].minute)
-        if (date_element.getTime() - decalage.getTime()< 3600 & date_element.getTime() - decalage.getTime()>0 & nombre_ajouter <= limite){
+        if(date_element.getTime()  + 600000 >= decalage.getTime() & nombre_ajouter < limite){
             nombre_ajouter ++;
-            //console.log(element[1].getHours() +":"+ element[1].getMinutes() + "est apres " + decalage.getHours() + ":" + decalage.getMinutes())
+            
             ajouter_ligne(to2nombre(element[1].hour - decalage.getTimezoneOffset()/60) + ":" + to2nombre(element[1].minute), nom_groupe(element[4]), element[2], element[3]);
         }
-        if(nombre_ajouter >=limite){
+        if(nombre_ajouter >limite){
             break
         }
         i++;
@@ -319,22 +320,23 @@ async function pour_le_message(){
 
 }
 async function recuperer_message(){
-        await pour_le_message()
-        .then(json => {
-            return json.message
-        })
-        .then(message =>{
-            console.log(message)
-            document.getElementById("message").textContent = message
-        })
-        .catch(err => {
-            setTimeout(() => {
-                recuperer_message()
-            }, 5000);
-        })
-        setTimeout(recuperer_message, 300000)//on redemande le message toute les 5 minutes pour savoir si il a changé        
+    await pour_le_message()
+    .then(json => {
+        return json.message
+    })
+    .then(message =>{
+        console.log(message)
+        document.getElementById("message").textContent = message
+    })
+    .catch(err => {
+        setTimeout(() => {
+            recuperer_message()
+        }, 5000);
+    })
+    setTimeout(recuperer_message, 300000)//on redemande le message toute les 5 minutes pour savoir si il a changé        
 }
 recuperer_message()
+setInterval(liste_au_tableau, 60000)
 /*
 code pour les groupes
 1: 1A G1a

@@ -2,7 +2,7 @@ from flask import jsonify,Flask, render_template, redirect
 import flask
 import datetime, requests
 app = Flask(__name__)
-temps = datetime.datetime.now() + datetime.timedelta(days=1)
+temps = datetime.datetime.now()
 app.config['CORS_HEADERS'] = 'Content-Type'
 class M:
     def __init__(self):
