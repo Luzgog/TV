@@ -2,7 +2,7 @@ from flask import jsonify,Flask, render_template, redirect
 import flask
 import datetime, requests
 app = Flask(__name__)
-temps = datetime.datetime.now()
+temps = datetime.datetime.now() + datetime.timedelta(days=5)
 app.config['CORS_HEADERS'] = 'Content-Type'
 class M:
     def __init__(self):
@@ -15,6 +15,7 @@ class M:
             file.write(new[0])
 M = M()
 MOT_DE_PASSE="aaa"
+
 
 def generer_url(id, time):
     """prend en entrée l'id qui correspond au groupe et renvoie  l'url"""

@@ -54,7 +54,6 @@ function set_map_nombre(){
     //LP Epocs
     map.set(1400, 29128)
     map.set(1401, 29149)
-
     //LP RSF
     map.set(2900, 29178)
     map.set(3000, 58120)

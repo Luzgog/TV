@@ -1,1 +1,1 @@
-DISPLAY=:0.0 chromium-browser --noerrdialogs --incognito --kiosk 127.0.0.1:8000
+DISPLAY=:0.0 chromium-browser --noerrdialogs --incognito --kiosk 127.0.0.1:5000
