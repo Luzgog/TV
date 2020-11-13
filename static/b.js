@@ -9502,6 +9502,51 @@ ICAL.ComponentParser = (function() {
 }());
 
 },{}],2:[function(require,module,exports){
+function to2nombre(nb){//renvoie un string avec 2 nombre quite' a rajouter 0 devant
+    if (nb<10){
+        return "0"+nb
+    }else{
+        return nb
+    }
+}
+async function pour_la_meteo(){
+    api = "https://api.openweathermap.org/data/2.5/weather?id=2995469&appid=4502b4f9f62b856175f966968f504e09&units=metric&lang=fr";
+    var a = await fetch(api);
+    var json = await a.json();
+    console.log(json)
+    return json;
+}
+
+async function meteo(){
+    let icone = document.getElementById("icon")
+    let temperature = document.getElementById("temperature")
+    let description = document.getElementById("description")
+    let vent = document.getElementById("vent")
+    await pour_la_meteo()
+    .then(json =>{
+        console.log(json);        
+        let t = json.main.temp;
+        let d = json.weather[0].description
+        let i = json.weather[0].icon
+        let v = json.wind.speed *3.6
+        console.log("temperature :" + t)
+        console.log("description :" + d)
+        console.log("icone :" + i)
+        console.log("vent :" + v)
+        icone.innerHTML= `<img src="static/${i}.png"/>`
+        temperature.innerHTML =`${Math.floor(t)}°<span>C</span>`
+        description.innerHTML = d
+        vent.innerHTML = `${Math.floor(v)}<span> km/h</span>`
+    })
+    .catch(err=>{
+        console.log(err)
+        //setTimeout(meteo, 300000);
+    })
+    setTimeout(meteo, 900000);
+}
+
+meteo()
+
 function ajouter_ligne(heure, groupe, salle, nom){
     var tableRef = document.getElementById("tableau").getElementsByTagName("tbody")[0]
     var newRow   = tableRef.insertRow()
@@ -9558,7 +9603,6 @@ function set_map_nombre(){
     //LP Epocs
     map.set(1400, 29128)
     map.set(1401, 29149)
-
     //LP RSF
     map.set(2900, 29178)
     map.set(3000, 58120)
@@ -9716,13 +9760,7 @@ function afficher_heure(){
     setTimeout(afficher_heure, 1000)//on attend 1 seconde, ouai c'est peut etre overkill mais balek
 }
 afficher_heure()//on est obliger de le lancer une fois pour initialiser
-function to2nombre(nb){//renvoie un string avec 2 nombre quite' a rajouter 0 devant
-    if (nb<10){
-        return "0"+nb
-    }else{
-        return nb
-    }
-}
+
 function clear_tableau(){
     var tableHeaderRowCount = 1;
     var table = document.getElementById("tableau");
@@ -9777,7 +9815,7 @@ async function recuperer_donnee(){
         var a = []
         for(var i =0; i<liste2.length; i++){
             console.log("je retry " + nom_groupe(liste2[i][0]))
-            await test(liste2[i][0], liste2[i][1])
+            await lefetch(liste2[i][0], liste2[i][1])
             .then(ical => {
                 //console.log("je recupere les données suivante : \n"+ical.valeur)
                 var calendrier = ICAL.parse(ical.valeur);
@@ -9836,11 +9874,15 @@ async function recuperer_message(){
             recuperer_message()
         }, 5000);
     })
-    setTimeout(recuperer_message, 300000)//on redemande le message toute les 5 minutes pour savoir si il a changé        
+    setTimeout(recuperer_message, 10000)//on redemande le message toute les 5 minutes pour savoir si il a changé        
 }
-recuperer_message()
+recuperer_message();
 setInterval(liste_au_tableau, 60000)
+
+
 /*
+https://api.openweathermap.org/data/2.5/weather?id=2995469&appid=4502b4f9f62b856175f966968f504e09&units=metric&lang=fr
+
 code pour les groupes
 1: 1A G1a
 2: 1A G1b

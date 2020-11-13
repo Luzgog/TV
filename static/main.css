@@ -1,7 +1,7 @@
-html{
+/*html{
     background-image: linear-gradient(to bottom, blue, white);
     background-repeat: no-repeat;
-}
+}*/
 table {
     border-collapse: collapse;
     border: 2px solid rgb(200,200,200);
@@ -31,30 +31,56 @@ caption {
 }
 #message{
     font-size:5cm;
+    color: white;
     text-align: center;
-    border-style :solid;
-    border-color: red;
-    border-width: 7px;
+    /*border-style :solid;
+    border-color: white;*/
+    border-width: 2px;
+
+    height: 15%;
 }
 #tableau{
     font-size-adjust: 0.5;
     margin-right: auto;
     margin-left: auto;
+    height: 70%;
 }
 #haut{
     display: flex;
     justify-content: space-between;
     padding-bottom: 15px;
+    height: 15%;
 }
 #horloge{
-    background-color: black;
-    color: white;
+    /*background-color: black;*/
+    padding-top:100px;
+    color:white;
     font-size: 5cm;
     border-radius: 50px;
     text-align: center;
     width: 14.5cm;
+    font-family: 'Nunito Sans', sans-serif;
 }
-#openweathermap-widget-15{
-    width: 22.5%;
+.meteo{
+    color:white;
+    height 600px;
+    width: 300px;
+    padding-right: 30px;
+    padding-left: 30px;
+    border-style: solid;
+    border-radius: 30px;
+    display:flex;
+    align-content: center;
+    flex-direction: column;
+    font-size: 50px;
+    text-align: center;
 }
-
+#titre{
+    align-self: stretch;
+    vertical-align: middle;
+}
+#icon{
+    align-self: center;
+    height: 128px;
+    width: 128px;
+}

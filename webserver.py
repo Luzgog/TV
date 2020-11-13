@@ -2,7 +2,7 @@ from flask import jsonify,Flask, render_template, redirect
 import flask
 import datetime, requests
 app = Flask(__name__)
-temps = datetime.datetime.now() + datetime.timedelta(days=5)
+temps = datetime.datetime.now()
 app.config['CORS_HEADERS'] = 'Content-Type'
 class M:
     def __init__(self):
@@ -12,7 +12,7 @@ class M:
         self.message=new
         print(self.message)
         with open("message.txt", 'w') as file:
-            file.write(new[0])
+            file.write(new)
 M = M()
 MOT_DE_PASSE="aaa"
 
