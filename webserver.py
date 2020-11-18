@@ -2,16 +2,16 @@ from flask import jsonify,Flask, render_template, redirect
 import flask
 import datetime, requests
 app = Flask(__name__)
-temps = datetime.datetime.now()
+temps = datetime.datetime.now()#+datetime.timedelta(hours=8)
 app.config['CORS_HEADERS'] = 'Content-Type'
 class M:
     def __init__(self):
-        with open("message.txt", 'r') as file:
+        with open("message.txt", 'r', encoding="utf-8") as file:
             self.message = file.read()
     def changer(self, new):
         self.message=new
         print(self.message)
-        with open("message.txt", 'w') as file:
+        with open("message.txt", 'w', encoding="utf-8") as file:
             file.write(new)
 M = M()
 MOT_DE_PASSE="aaa"

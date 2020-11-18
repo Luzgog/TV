@@ -9540,7 +9540,7 @@ async function meteo(){
     })
     .catch(err=>{
         console.log(err)
-        //setTimeout(meteo, 300000);
+        setTimeout(meteo, 300000);
     })
     setTimeout(meteo, 900000);
 }
